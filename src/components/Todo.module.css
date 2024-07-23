@@ -1,0 +1,31 @@
+
+.task {
+    & .title {
+        padding: 15px 0;
+        transition: .3s;
+        cursor: pointer;
+        &:hover {
+            background-color: burlywood;
+        }
+    }
+    & .taskItem {
+        padding: 10px;
+        cursor: pointer;
+        transition: .3s;
+        &:hover {
+            background-color: bisque;
+        }
+    }
+}
+
+.crossedOut {
+    text-decoration: line-through;
+}
+
+.taskOver {
+    box-shadow: 1px 1px 8px 2px lightblue;
+}
+
+.childTaskOver {
+    box-shadow: 1px 1px 8px 2px red;
+}
