@@ -42,19 +42,20 @@ const TaskItem: FC<TaskItemProps> = ({id, index, title, children, selected, move
         }
       }
     }),
-    []
+    [index]
   )
 
   const [, drag] = useDrag(() => ({
     type: DRAG_TYPES.task,
     item: {
       id,
-      index
+      index,
+      title
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
-  }))
+  }), [index])
 
     return (
         <div

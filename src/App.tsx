@@ -5,39 +5,48 @@ import {TodoItem, TodoChildItem} from 'components'
 import {DndChildItem} from './types'
 
 function App() {
-  const [data, setData] = useState(DATA)
-  const [selectedTasks, setSelected] = useState<Map<number, number[]>>(
-    new Map()
-  )
+  const [state, setState] = useState<{
+    data: typeof DATA,
+    selectedTasks: Map<number, number[]>
+  }>({
+    data: DATA,
+    selectedTasks: new Map()
+  })
 
   const moveTasks = (fromIndex: number, toIndex: number) => {
-    setData(prevState => {
-      const tasks = [...prevState]
+    setState(prevState => {
+      const tasks = [...prevState.data]
 
       const [movedItem] = tasks.splice(fromIndex, 1, tasks[toIndex])
       tasks.splice(toIndex, 1, movedItem)
 
-      return tasks
+      return {
+        ...prevState,
+        data: tasks
+      }
     })
   }
 
   const moveSubTasks = (dndItem: DndChildItem, toIndex: number) => {
-    setData(prevState => {
-      return prevState.map(task => {
-        if (dndItem.parentID === task.id) {
-          const children = [...task.children]
-          const [movedItem] = children.splice(dndItem.index, 1, children[toIndex])
-          children.splice(toIndex, 1, movedItem)
+    setState(prevState => {
+      return {
+        ...prevState,
+        data: prevState.data.map(task => {
+          if (dndItem.parentID === task.id) {
+            const children = [...task.children]
+            const [movedItem] = children.splice(dndItem.index, 1, children[toIndex])
+            children.splice(toIndex, 1, movedItem)
 
-          return {
-            ...task,
-            children
+            return {
+              ...task,
+              children
+            }
           }
-        }
 
 
-        return task
-      })
+          return task
+        })
+      }
     })
   }
 
@@ -45,17 +54,35 @@ function App() {
     <div className="App">
       <button
         onClick={() => {
-          setData(prevState => {
-            return prevState.filter(task => {
-              return task.children.length !== selectedTasks.get(task.id)?.length
+
+          setState(prevState => {
+            let removedIDs: number[] = []
+
+            const filtered = prevState.data.filter(task => {
+              const remain = task.children.length !== prevState.selectedTasks.get(task.id)?.length
+
+              if (!remain) {
+                removedIDs.push(task.id)
+              }
+
+              return remain
             })
+
+            const clone = new Map(prevState.selectedTasks)
+
+            removedIDs.forEach(id => clone.delete(id))
+
+            return {
+              selectedTasks: clone,
+              data: filtered
+            }
           })
         }}
       >
         Clear Completed Tasks
       </button>
-      {data.map((task, taskIndex) => {
-        const childIDs = selectedTasks.get(task.id) || []
+      {state.data.map((task, taskIndex) => {
+        const childIDs = state.selectedTasks.get(task.id) || []
 
         return (
           <TodoItem
@@ -75,18 +102,24 @@ function App() {
                 parentID={task.id}
                 selected={childIDs.includes(child.id)}
                 onClick={() => {
-                  setSelected(prevState => {
-                    const clone = new Map(prevState)
+                  setState(prevState => {
+                    const clone = new Map(prevState.selectedTasks)
                     const children = clone.get(task.id)
 
                     if (!children) {
-                      return clone.set(task.id, [child.id])
+                      return {
+                        ...prevState,
+                        selectedTasks: clone.set(task.id, [child.id])
+                      }
                     }
 
-                    return clone.set(task.id, children.includes(child.id)
-                      ? children.filter(id => id !== child.id)
-                      : [...children, child.id]
-                    )
+                    return {
+                      ...prevState,
+                      selectedTasks: clone.set(task.id, children.includes(child.id)
+                        ? children.filter(id => id !== child.id)
+                        : [...children, child.id]
+                      )
+                    }
                   })
                 }}
               />

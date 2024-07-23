@@ -21,12 +21,13 @@ const TodoChildItem: FC<TodoChildItemProps> = ({title, id, index, onClick, selec
     item: {
       id,
       parentID,
-      index
+      index,
+      title
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging()
     })
-  }))
+  }), [index])
 
   const [{ isOver }, drop] = useDrop<DndChildItem, any, any>(
     () => ({
@@ -44,7 +45,7 @@ const TodoChildItem: FC<TodoChildItemProps> = ({title, id, index, onClick, selec
         }
       }
     }),
-    []
+    [index]
   )
 
     return (
